@@ -6,12 +6,16 @@ import { VALIDATOR_EMAIL, VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from "../../s
 import Input from "../../shared/components/FormElements/Input";
 import { useForm } from "../../shared/hooks/form-hook";
 import { AuthContext } from "../../shared/context/auth-context";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import './Auth.css'
 
 const Auth = () => {
     let navigate = useNavigate()
     const auth = useContext(AuthContext)
     const [isLoginMode, setIsLoginMode] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState()
     const [formState, inputHandler, setFormData] = useForm({
         email: {
             value: "",
@@ -23,11 +27,40 @@ const Auth = () => {
         }
     }, false)
 
-    const authSubmitHandler = (event) => {
+    const authSubmitHandler = async (event) => {
         event.preventDefault();
-        console.log(formState.inputs)
-        auth.login()
-        navigate('/');
+        if (isLoginMode) {
+        } else {
+          try {
+            setIsLoading(true)
+            const response = await fetch('http://localhost:5000/api/users/signup', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                name: formState.inputs.name.value,
+                email: formState.inputs.email.value,
+                password: formState.inputs.password.value
+              })
+            });
+    
+            const responseData = await response.json();
+            if(!response.ok){
+                throw new Error(responseData.message)
+            }
+            setIsLoading(false)
+            auth.login()
+            navigate('/');
+          } catch (err) {
+            console.log(err);
+            setIsLoading(false)
+            setError(err.message || 'Something went wrong')
+          }
+        }
+    
+        
+        
 
     }
 
@@ -48,8 +81,15 @@ const Auth = () => {
         }
         setIsLoginMode(prevMode => !prevMode)
     }
+    const errorHandler = () =>{
+        setError(null);
+    }
 
-    return (<Card className="authentication">
+    return (
+    <>
+    <ErrorModal error={error} onClear={errorHandler}/>
+    <Card className="authentication">
+        {isLoading && <LoadingSpinner asOverlay/>}
         <h2>Login required</h2>
         <hr />
         <form onSubmit={authSubmitHandler}>
@@ -83,6 +123,7 @@ const Auth = () => {
         </form>
         <Button inverse onClick={switchModeHandler}>Switch to {isLoginMode ? 'Sign Up' : 'Login'}</Button>
     </Card>
+    </>
     )
 }
 
