@@ -64,8 +64,8 @@ const PlaceItem = (props) => {
                     </div>
                     <div className="place-item__actions">
                         <Button inverse onClick={openMapHandler}>View On Map</Button>
-                        {auth.isLoggedIn && <Button to={`/places/${props.id}`}>Edit</Button>}
-                        {auth.isLoggedIn && <Button danger onClick={showDeleteWarningHandler}>Delete</Button>}
+                        {auth.userId=== props.creatorId && <Button to={`/places/${props.id}`}>Edit</Button>}
+                        {auth.userId=== props.creatorId && <Button danger onClick={showDeleteWarningHandler}>Delete</Button>}
 
                     </div>
                 </Card>
