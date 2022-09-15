@@ -1,41 +1,22 @@
-import React,{useEffect, useState} from "react";
-import { useParams } from "react-router-dom";
+import React,{useEffect, useState,useContext} from "react";
+import { useParams,useNavigate } from "react-router-dom";
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
 import Card from "../../shared/components/UIElements/Card";
 import { VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from "../../shared/util/validators";
 import { useForm } from "../../shared/hooks/form-hook";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 import './PlaceForm.css'
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import { AuthContext } from '../../shared/context/auth-context';
 
-const DUMMY_PLACES = [{
-    id: 'p1',
-    title: "Infopark Kochi",
-    description: "Information technology park situated in the city of Kochi, Kerala, India",
-    imageURL: "https://infopark.in/assets/images/slider/homeBanner2.jpg",
-    address: "Phase 1, Info Road, Near Tapasya Block Kakkanad, Kochi, Kerala 682042",
-    location: {
-        lat: 10.0115718,
-        lng: 76.3599615
-    },
-    creator: 'u1'
-}, {
-    id: 'p2',
-    title: "Infopark Kochi",
-    description: "Information technology park situated in the city of Kochi, Kerala, India",
-    imageURL: "https://infopark.in/assets/images/slider/homeBanner2.jpg",
-    address: "Phase 1, Info Road, Near Tapasya Block Kakkanad, Kochi, Kerala 682042",
-    location: {
-        lat: 10.0115718,
-        lng: 76.3599615
-    },
-    creator: 'u2'
-}
-]
 
 const UpdatePlace = () => {
-
-    const [isLoading,setIsLoading] = useState(true)
+    const navigate = useNavigate();
+    const auth = useContext(AuthContext);
+    const [loadedPlace,setLoadedPlace] = useState()
     const placeId = useParams().placeId;
 
     const [formState, InputHandler,setFormData] = useForm({
@@ -46,43 +27,63 @@ const UpdatePlace = () => {
         description:{
             value: '',
             isValid: false
-        },
-        address:{
-            value: '',
-            isValid: false
         }
     }, false)
 
-    const identifiedPlace = DUMMY_PLACES.find(p => p.id === placeId);
+    const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
     useEffect(()=>{
-        if(identifiedPlace){
-            setFormData({
-                title: {
-                    value: identifiedPlace.title,
-                    isValid: true
-                },
-                description:{
-                    value: identifiedPlace.description,
-                    isValid: true
-                },
-                address:{
-                    value: identifiedPlace.address,
-                    isValid: true
-                }
-            },true)
-        }
-       
-        setIsLoading(false)
-    },[setFormData,identifiedPlace])
-    
+        const fetchPlace = async () =>{
+            try{
+                const response = await sendRequest(`http://localhost:5000/api/places/${placeId}`)
+                
+                setLoadedPlace(response.place);
+                setFormData({
+                    title: {
+                        value: response.place.title,
+                        isValid: true
+                    },
+                    description:{
+                        value: response.place.description,
+                        isValid: true
+                    }
+                    
+                },true)
+                
+            }catch(err){
 
-    const placeUpdateSubmitHandler = event => {
-        event.preventDefault()
-        console.log(formState.inputs)
+            }
+        }
+        fetchPlace();
+    },[sendRequest,placeId,setFormData])
+
+
+    const placeUpdateSubmitHandler = async event => {
+        event.preventDefault();
+        try {
+          await sendRequest(
+            `http://localhost:5000/api/places/${placeId}`,
+            'PATCH',
+            JSON.stringify({
+              title: formState.inputs.title.value,
+              description: formState.inputs.description.value
+            }),
+            {
+              'Content-Type': 'application/json'
+            }
+          );
+          navigate('/' + auth.userId + '/places');
+        } catch (err) {}
+      };
+    
+    if (isLoading) {
+        return (
+            <div className="center">
+                <LoadingSpinner asOverlay/>
+            </div>)
     }
 
-    if (!identifiedPlace) {
+    if (!loadedPlace && !error) {
         return (
             <div className="center">
                 <Card>
@@ -91,14 +92,12 @@ const UpdatePlace = () => {
             </div>)
     }
 
-    if (isLoading) {
-        return (
-            <div className="center">
-                <h2>Loading...</h2>
-            </div>)
-    }
+   
 
-    return <form onSubmit={placeUpdateSubmitHandler} className="place-form">
+    return (
+     <>
+     <ErrorModal error={error} onClear={clearError}/>
+     {!isLoading && loadedPlace && <form onSubmit={placeUpdateSubmitHandler} className="place-form">
         <Input
             element="input"
             id="title"
@@ -120,20 +119,10 @@ const UpdatePlace = () => {
             valid={formState.inputs.description.isValid}
             onInput={InputHandler}
         />
-        <Input
-            element="input"
-            id="address"
-            type="text"
-            validators={[VALIDATOR_REQUIRE()]}
-            errorText="please enter a valid address"
-            label="Address"
-            value={formState.inputs.address.value}
-            valid={formState.inputs.address.isValid}
-            onInput={InputHandler}
-        />
 
         <Button type="submit" disabled={!formState.isValid}>Update</Button>
-    </form>
+    </form>}
+    </>)
 
 }
 
