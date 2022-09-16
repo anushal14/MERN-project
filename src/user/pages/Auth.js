@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import Card from "../../shared/components/UIElements/Card";
 import Button from "../../shared/components/FormElements/Button";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload";
 import { VALIDATOR_EMAIL, VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from "../../shared/util/validators";
 import Input from "../../shared/components/FormElements/Input";
 import { useForm } from "../../shared/hooks/form-hook";
@@ -29,6 +30,7 @@ const Auth = () => {
 
     const authSubmitHandler = async (event) => {
         event.preventDefault();
+        console.log(formState.inputs)
 
         if (isLoginMode) {
             try {
@@ -49,17 +51,16 @@ const Auth = () => {
             } catch (err) {}
           } else {
             try {
+              const formData = new FormData();
+              formData.append('email',formState.inputs.email.value);
+              formData.append('name',formState.inputs.name.value);
+              formData.append('password',formState.inputs.password.value);
+              formData.append('image',formState.inputs.image.value);
+
                 const responseData = await sendRequest(
                 'http://localhost:5000/api/users/signup',
                 'POST',
-                JSON.stringify({
-                  name: formState.inputs.name.value,
-                  email: formState.inputs.email.value,
-                  password: formState.inputs.password.value
-                }),
-                {
-                  'Content-Type': 'application/json'
-                }
+                formData
               );
       
               auth.login(responseData.user.id);
@@ -73,7 +74,8 @@ const Auth = () => {
         if (!isLoginMode) {
             setFormData({
                 ...formState.inputs,
-                name: undefined
+                name: undefined,
+                image:undefined
             }, formState.inputs.email.isValid && formState.inputs.password.isValid)
         } else {
             setFormData({
@@ -81,7 +83,11 @@ const Auth = () => {
                 name: {
                     value: '',
                     isValid: false
-                }
+                },
+                image: {
+                  value: null,
+                  isValid: false
+              }
             }, false)
         }
         setIsLoginMode(prevMode => !prevMode)
@@ -105,6 +111,7 @@ const Auth = () => {
                     onInput={inputHandler}
                     errorText="please enter a valid Name" />
             )}
+            {!isLoginMode && <ImageUpload center id="image" onInput={inputHandler} errorText="please provide an image"/>}
             <Input
                 id="email"
                 element="input"
