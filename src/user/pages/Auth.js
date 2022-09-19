@@ -46,7 +46,7 @@ const Auth = () => {
                 }
               );
               console.log(responseData.user)
-              auth.login(responseData.user.id);
+              auth.login(responseData.userId,responseData.token);
               navigate('/');
             } catch (err) {}
           } else {
@@ -63,7 +63,7 @@ const Auth = () => {
                 formData
               );
       
-              auth.login(responseData.user.id);
+              auth.login(responseData.userId,responseData.token);
               navigate('/');
             } catch (err) {}
           } 
