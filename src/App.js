@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import './App.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom'
 import Users from './user/pages/Users';
 import NewPlace from './places/pages/NewPlace';
 import UserPlaces from './places/pages/UsePlaces';
@@ -68,12 +68,15 @@ const App = () => {
 
   return (
     <AuthContext.Provider value={{ isLoggedIn: !!token,token:token,userId:userId, login: login, logout: logout }}>
-      <BrowserRouter>
+      {/* <BrowserRouter> */}
+      <HashRouter>
         <MainNavigation />
+       
         <main>
           {routes}
         </main>
-      </BrowserRouter>
+        </HashRouter>
+      {/* </BrowserRouter> */}
     </AuthContext.Provider>
   )
 }
