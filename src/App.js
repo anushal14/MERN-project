@@ -8,6 +8,7 @@ import UpdatePlace from './places/pages/UpdatePlace';
 import Auth from './user/pages/Auth';
 import MainNavigation from './shared/components/Navigation/MainNavigation';
 import { AuthContext } from './shared/context/auth-context';
+import Home from './shared/home';
 
 let logoutTimer;
 
@@ -49,7 +50,8 @@ const App = () => {
   if (token) {
     routes = (
       <Routes>
-        <Route exact path="/" element={<Users />}></Route>
+        <Route exact path="/" element={<Home />}></Route>
+        <Route exact path="/users" element={<Users />}></Route>
         <Route exact path="/:userId/places" element={<UserPlaces />}></Route>
         <Route exact path="/places/:placeId" element={<UpdatePlace />}></Route>
         <Route exact path="/places/new" element={<NewPlace />}></Route>
@@ -58,7 +60,8 @@ const App = () => {
   } else {
     routes = (
       <Routes>
-        <Route exact path="/" element={<Users />}></Route>
+        <Route exact path="/" element={<Home />}></Route>
+        <Route exact path="//users" element={<Users />}></Route>
         <Route exact path="/:userId/places" element={<UserPlaces />}></Route>
         <Route exact path="/auth" element={<Auth />}></Route>
       </Routes>
