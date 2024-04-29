@@ -3,6 +3,7 @@ import UsersList from "../components/UsersList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import { useHttpClient } from "../../shared/hooks/http-hook";
+import UserSkeleton from "../components/UserSkelton";
 
 const Users = () => {
     const { isLoading, error, sendRequest, clearError } = useHttpClient();
@@ -28,9 +29,12 @@ const Users = () => {
     <React.Fragment>
         <ErrorModal error={error} onClear={clearError} />
             {isLoading && (
-            <div className="center">
-             <LoadingSpinner />
-            </div>
+            <ul className="users-list">
+                {[...Array(19)].map((_,index)=>(
+                    <UserSkeleton/>
+                ))}
+             
+            </ul>
          )}
         {!isLoading && loadedUsers && <UsersList items={loadedUsers} />}
   </React.Fragment>
