@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useContext } from "react";
 import { useHttpClient } from "./hooks/http-hook";
 import { NavLink } from "react-router-dom";
+import { AuthContext } from "./context/auth-context";
 
     
 const Home = () =>{
-    const { isLoading, error, sendRequest, clearError } = useHttpClient();
+    const auth = useContext(AuthContext)
+    const { sendRequest} = useHttpClient();
     useEffect(()=>{
         const fetchUsers = async () =>{
             try{
@@ -21,7 +23,7 @@ const Home = () =>{
     return(<div style={{textAlign:'center',padding:'5% 10%',fontSize:'1.5em',textJustify:"inter-word"}}>
        
       <h1 style={{fontWeight:'bolder'}}>Capture life's moments. Share the journey. Connect through memories.</h1>
-      <p style={{textAlign:'center'}}><span style={{color:'darkblue',cursor:'pointer'}}> <NavLink exact to='/auth'>Sign in</NavLink></span> to share your spark and <span style={{cursor:'pointer',color:'darkblue'}}><NavLink exact to='/users'>dive into</NavLink></span> the gallery of shared stories.</p>
+      <p style={{textAlign:'center'}}><span style={{color:auth.token?'':'darkblue',cursor:auth.token?'default':'pointer'}}>{auth.token?'Sign in':<NavLink exact to='/auth'>Sign in</NavLink>}</span> to share your spark and <span style={{cursor:'pointer',color:'darkblue'}}><NavLink exact to='/users'>dive into</NavLink></span> the gallery of shared stories.</p>
       </div>)
 }
 

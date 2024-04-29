@@ -47,7 +47,7 @@ const Auth = () => {
               );
               console.log(responseData.user)
               auth.login(responseData.userId,responseData.token);
-              navigate('/');
+              navigate('/users');
             } catch (err) {}
           } else {
             try {
@@ -64,7 +64,7 @@ const Auth = () => {
               );
       
               auth.login(responseData.userId,responseData.token);
-              navigate('/');
+              navigate('/users');
             } catch (err) {}
           } 
 
